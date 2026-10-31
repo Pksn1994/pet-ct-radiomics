@@ -1,0 +1,10 @@
+# Python environment and cache
+.venv/
+__pycache__/
+*.pyc
+
+# Imaging data
+pet-ct-radiomicsdata*/
+*.nii
+*.nii.gz
+*.dcm
