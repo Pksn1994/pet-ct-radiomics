@@ -69,3 +69,22 @@ I calculated PET uptake statistics using all 1,299 voxels labelled 1 in the segm
 
 The distribution has a long tail towards higher SUV values. The mean is higher than the median. These statistics describe the full mask for one patient, which may include several separate lesions.
 
+## Running the script
+
+I used Python 3.11 on Windows. To run the code, open PowerShell in the project folder and install the packages in a virtual environment:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+The image files are not included in this repository. Put `SUV.nii.gz`, `CTres.nii.gz` and `SEG.nii.gz` from the same study in a folder called `pet-ct-radiomicsdataPETCT0011f3deaf`, beside the script. If you use a different folder name, update `data_dir` in the code.
+
+Then run:
+
+```powershell
+.\.venv\Scripts\python.exe .\inspect_images.py
+```
+
+Close each plot window to continue. The script prints the image information and PET statistics, then saves the CSV, CT overlay and histogram.
+
