@@ -98,3 +98,13 @@ fig.colorbar(ct_display, ax=ax, label="CT intensity")
 fig.savefig(project_dir / "ct_mask_slice296.png",
             dpi=200, bbox_inches="tight")
 plt.show()
+fig, ax = plt.subplots(figsize=(7, 4))
+
+ax.hist(lesion_values, bins=30, edgecolor="black")
+ax.set_xlabel("SUV")
+ax.set_ylabel("Number of voxels")
+ax.set_title("PET uptake within the full segmentation mask")
+
+fig.tight_layout()
+fig.savefig(project_dir / "pet_suv_histogram.png", dpi=200)
+plt.show()
