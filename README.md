@@ -54,3 +54,18 @@ The NIfTI dataset is provided under CC BY-NC 4.0. The example figure above was g
 
 This project is still in progress. No clinical prediction or feature robustness results are available yet.
 
+## First PET statistics
+
+I calculated PET uptake statistics using all 1,299 voxels labelled 1 in the segmentation mask.
+
+| Measurement | Value |
+| --- | ---: |
+| Mean SUV | 6.397499 |
+| Median SUV | 5.095382 |
+| Maximum SUV | 19.653612 |
+| Standard deviation | 3.871733 |
+
+![PET uptake histogram](pet_suv_histogram.png)
+
+The distribution has a long tail towards higher SUV values. The mean is higher than the median. These statistics describe the full mask for one patient, which may include several separate lesions.
+
