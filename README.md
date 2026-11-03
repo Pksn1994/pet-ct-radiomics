@@ -86,5 +86,30 @@ Then run:
 .\.venv\Scripts\python.exe .\inspect_images.py
 ```
 
-Close each plot window to continue. The script prints the image information and PET statistics, then saves the CSV, CT overlay and histogram.
+Close each plot window to continue. The script prints the image information and PET statistics, then saves the CSV, CT overlay, and histogram.
+
+## Looking at more slices
+
+The mask contains labelled voxels in 23 slices. I made PET and CT overview images to see where these regions appear across the scan.
+
+![CT slices with mask outlines](ct_mask_all_slices.png)
+
+![PET slices with mask outlines](pet_mask_all_slices.png)
+
+These images give an overview, but the small panels are not enough to check alignment in detail. The PET images use a display range of 0–10 SUV.
+
+## Running with Ubuntu
+
+Windows blocked a Matplotlib file on my laptop. Reinstalling the package did not solve it, so I continued using Ubuntu through WSL with Python 3.12.3.
+
+I created a separate environment and installed the packages:
+
+    python3 -m venv ~/pet-ct-radiomics-venv
+    ~/pet-ct-radiomics-venv/bin/python -m pip install numpy nibabel matplotlib
+
+From the project folder in Ubuntu, I ran:
+
+    ~/pet-ct-radiomics-venv/bin/python inspect_images.py
+
+The figures were saved as PNG files, which I opened in VS Code. Plot windows were not available in this setup.
 
