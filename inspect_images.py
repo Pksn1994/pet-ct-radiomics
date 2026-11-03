@@ -59,6 +59,11 @@ slice_index = int(np.argmax(lesion_voxels_per_slice))
 
 print("Slice index with most lesion voxels:", slice_index)
 print("Lesion voxels in this slice:", lesion_voxels_per_slice[slice_index])
+# Find every slice containing labelled voxels
+mask_slices = np.flatnonzero(lesion_voxels_per_slice > 0)
+
+print("Slices containing the mask:", mask_slices)
+print("Number of slices containing the mask:", mask_slices.size)
 import matplotlib.pyplot as plt
 
 pet_slice = np.asarray(pet_image.dataobj[:, :, slice_index])
@@ -108,3 +113,48 @@ ax.set_title("PET uptake within the full segmentation mask")
 fig.tight_layout()
 fig.savefig(project_dir / "pet_suv_histogram.png", dpi=200)
 plt.show()
+# View all slices containing the mask
+fig, axes = plt.subplots(4, 6, figsize=(18, 12))
+
+for ax, z in zip(axes.flat, mask_slices):
+    ct_slice = np.asarray(ct_image.dataobj[:, :, z])
+    mask_slice = mask_data[:, :, z]
+
+    ax.imshow(
+        ct_slice.T, cmap="gray", origin="lower",
+        vmin=-150, vmax=250
+    )
+    ax.contour(
+        mask_slice.T, levels=[0.5],
+        colors="red", linewidths=0.8
+    )
+    ax.set_title(f"Slice {z}")
+    ax.axis("off")
+
+for ax in axes.flat[mask_slices.size:]:
+    ax.axis("off")
+
+fig.tight_layout()
+fig.savefig(project_dir / "ct_mask_all_slices.png", dpi=200)
+plt.close(fig)
+# View PET uptake on all slices containing the mask
+fig, axes = plt.subplots(4, 6, figsize=(18, 12))
+
+for ax, z in zip(axes.flat, mask_slices):
+    ax.imshow(
+        pet_data[:, :, z].T,
+        cmap="gray_r", origin="lower", vmin=0, vmax=10
+    )
+    ax.contour(
+        mask_data[:, :, z].T,
+        levels=[0.5], colors="red", linewidths=0.8
+    )
+    ax.set_title(f"Slice {z}")
+    ax.axis("off")
+
+for ax in axes.flat[mask_slices.size:]:
+    ax.axis("off")
+
+fig.tight_layout()
+fig.savefig(project_dir / "pet_mask_all_slices.png", dpi=200)
+plt.close(fig)
