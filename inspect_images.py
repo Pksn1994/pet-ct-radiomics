@@ -158,3 +158,19 @@ for ax in axes.flat[mask_slices.size:]:
 fig.tight_layout()
 fig.savefig(project_dir / "pet_mask_all_slices.png", dpi=200)
 plt.close(fig)
+# Save the mask voxel count for each labelled slice
+slice_counts = np.column_stack((
+    mask_slices,
+    lesion_voxels_per_slice[mask_slices]
+))
+
+np.savetxt(
+    project_dir / "mask_voxels_per_slice.csv",
+    slice_counts,
+    delimiter=",",
+    header="slice_index,voxel_count",
+    comments="",
+    fmt="%d"
+)
+
+print("Saved mask_voxels_per_slice.csv")
