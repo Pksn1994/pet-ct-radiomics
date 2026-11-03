@@ -174,3 +174,46 @@ np.savetxt(
 )
 
 print("Saved mask_voxels_per_slice.csv")
+# Find connected regions in the 3D mask
+from scipy import ndimage
+
+connectivity = ndimage.generate_binary_structure(3, 3)
+
+region_labels, region_count = ndimage.label(
+    mask_data == 1,
+    structure=connectivity
+)
+
+print("Connected regions in the mask:", region_count)
+# Count voxels in each connected region
+region_sizes = np.bincount(region_labels.ravel())[1:]
+
+for region_id, voxel_count in enumerate(region_sizes, start=1):
+    print(f"Region {region_id}: {voxel_count} voxels")
+
+print("Total voxels across regions:", region_sizes.sum())
+# Calculate PET statistics for each connected region
+region_results = []
+
+for region_id in range(1, region_count + 1):
+    values = pet_data[region_labels == region_id]
+
+    region_results.append([
+        region_id,
+        values.size,
+        np.mean(values),
+        np.median(values),
+        np.max(values),
+        np.std(values)
+    ])
+
+np.savetxt(
+    project_dir / "pet_region_statistics.csv",
+    region_results,
+    delimiter=",",
+    header="region_id,voxel_count,mean_suv,median_suv,max_suv,std_suv",
+    comments="",
+    fmt=["%d", "%d", "%.6f", "%.6f", "%.6f", "%.6f"]
+)
+
+print("Saved pet_region_statistics.csv")
