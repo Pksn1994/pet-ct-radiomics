@@ -113,3 +113,14 @@ From the project folder in Ubuntu, I ran:
 
 The figures were saved as PNG files, which I opened in VS Code. Plot windows were not available in this setup.
 
+## Connected regions in the mask
+
+I used SciPy to separate the mask into connected regions. Voxels were considered connected if they shared a face, edge or corner, known as 26-connectivity.
+
+This gave five regions containing 103, 59, 280, 41 and 816 voxels. Together, they account for all 1,299 labelled voxels.
+
+I saved the PET uptake statistics for each region in `pet_region_statistics.csv`. These are connected regions in the segmentation and should not automatically be treated as separate clinical lesions.
+
+The Ubuntu package versions are recorded in `requirements-wsl.txt`.
+
+
