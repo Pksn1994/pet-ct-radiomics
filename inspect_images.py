@@ -403,3 +403,49 @@ fig.savefig(
 plt.close(fig)
 
 print("Saved region5_mask_changes.png")
+# Test mask changes for all connected regions
+all_results = []
+structure = ndimage.generate_binary_structure(3, 1)
+
+for region_id in range(1, region_count + 1):
+    region_mask = region_labels == region_id
+    baseline_mean = float(np.mean(pet_data[region_mask]))
+
+    masks = [
+        ("smaller", ndimage.binary_erosion(
+            region_mask, structure=structure, iterations=1
+        )),
+        ("original", region_mask),
+        ("larger", ndimage.binary_dilation(
+            region_mask, structure=structure, iterations=1
+        ))
+    ]
+
+    for name, changed_mask in masks:
+        values = pet_data[changed_mask]
+
+        if values.size == 0:
+            mean_suv = np.nan
+            change_pct = np.nan
+        else:
+            mean_suv = float(np.mean(values))
+            change_pct = (
+                100 * (mean_suv - baseline_mean) / baseline_mean
+            )
+
+        all_results.append([
+            region_id, name, values.size, mean_suv, change_pct
+        ])
+
+with open(
+    project_dir / "all_regions_mask_sensitivity.csv",
+    "w", newline="", encoding="utf-8"
+) as file:
+    writer = csv.writer(file)
+    writer.writerow([
+        "region_id", "mask", "voxel_count",
+        "mean_suv", "mean_suv_change_pct"
+    ])
+    writer.writerows(all_results)
+
+print("Saved all_regions_mask_sensitivity.csv")
