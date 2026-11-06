@@ -449,3 +449,32 @@ with open(
     writer.writerows(all_results)
 
 print("Saved all_regions_mask_sensitivity.csv")
+# Calculate CT intensity statistics for each connected region
+ct_data = ct_image.get_fdata(dtype=np.float32)
+ct_results = []
+
+for region_id in range(1, region_count + 1):
+    values = ct_data[region_labels == region_id]
+
+    ct_results.append([
+        region_id,
+        values.size,
+        float(np.mean(values)),
+        float(np.median(values)),
+        float(np.min(values)),
+        float(np.max(values)),
+        float(np.std(values))
+    ])
+
+with open(
+    project_dir / "ct_region_statistics.csv",
+    "w", newline="", encoding="utf-8"
+) as file:
+    writer = csv.writer(file)
+    writer.writerow([
+        "region_id", "voxel_count", "mean_ct", "median_ct",
+        "min_ct", "max_ct", "std_ct"
+    ])
+    writer.writerows(ct_results)
+
+print("Saved ct_region_statistics.csv")
