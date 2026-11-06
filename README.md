@@ -121,6 +121,16 @@ This gave five regions containing 103, 59, 280, 41 and 816 voxels. Together, the
 
 I saved the PET uptake statistics for each region in `pet_region_statistics.csv`. These are connected regions in the segmentation and should not automatically be treated as separate clinical lesions.
 
+## A closer look at each region
+
+I cropped the PET and CT images around each of the five regions to see the outlines more clearly. For each region, I chose the slice with the most mask voxels.
+
+The PET image is on the left and the CT image is on the right. The red line shows the mask boundary. The region numbers match the rows in `pet_region_statistics.csv`.
+
+Each crop covers a different area, so the regions are not all shown at the same scale.
+
+![PET and CT views of each region](pet_ct_regions.png)
+
 The Ubuntu package versions are recorded in `requirements-wsl.txt`.
 
 
