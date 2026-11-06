@@ -11,10 +11,14 @@ I want to investigate how radiomic features change when image preprocessing and 
 ## Work completed
 
 - Loaded PET, CT and segmentation files using NiBabel.
-- Checked image dimensions and voxel spacing.
-- Compared the spatial transforms of the three files.
-- Checked the segmentation labels and counted the labelled voxels.
-- Displayed the segmentation outline on PET and CT slices.
+- Checked image dimensions, voxel spacing, and spatial transforms.
+- Checked the mask labels and counted the labelled voxels.
+- Calculated PET uptake statistics for the full mask.
+- Made PET and CT overviews of all 23 slices containing the mask.
+- Separated the mask into five connected regions using SciPy.
+- Saved PET statistics and slice locations for each region.
+- Made closer PET and CT views of each region.
+- Tested how shrinking and expanding Region 5 changed its mean SUV.
 
 For the first case, all three images have dimensions of 400 × 400 × 326 and matching spatial transforms. The mask contains 1,299 labelled voxels.
 
