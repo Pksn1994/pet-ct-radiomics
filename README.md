@@ -19,6 +19,7 @@ I want to investigate how radiomic features change when image preprocessing and 
 - Saved PET statistics and slice locations for each region.
 - Made closer PET and CT views of each region.
 - Tested how shrinking and expanding Region 5 changed its mean SUV.
+- Calculated CT intensity statistics for each connected region.
 
 For the first case, all three images have dimensions of 400 × 400 × 326 and matching spatial transforms. The mask contains 1,299 labelled voxels.
 
@@ -175,4 +176,18 @@ The mean SUV increased after shrinking and decreased after expanding in all five
 
 The full results, including voxel counts, are saved in `all_regions_mask_sensitivity.csv`. All five regions come from the same scan, so this does not yet show how the results vary between patients.
 
+## CT intensity within each region
 
+I also calculated CT intensity statistics using the same five regions.
+
+| Region | Voxels | Mean CT intensity |
+|---|---:|---:|
+| 1 | 103 | −76.87 |
+| 2 | 59 | −56.69 |
+| 3 | 280 | −2.70 |
+| 4 | 41 | 39.25 |
+| 5 | 816 | 70.33 |
+
+The full results are saved in `ct_region_statistics.csv`, including the median, minimum, maximum and standard deviation.
+
+These values come from `CTres.nii.gz`, the CT image resampled to the PET grid. I used the stored image values without applying the display limits from the figures.
