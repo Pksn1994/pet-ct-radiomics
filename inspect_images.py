@@ -267,3 +267,88 @@ fig.savefig(
 plt.close(fig)
 
 print("Saved pet_ct_regions.png")
+
+# Save the slice range and displayed slice for each region
+region_locations = []
+
+for region_id, box in enumerate(region_boxes, start=1):
+    local_labels = region_labels[box]
+    counts = np.count_nonzero(local_labels == region_id, axis=(0, 1))
+
+    first_slice = box[2].start
+    last_slice = box[2].stop - 1
+    selected_slice = first_slice + int(np.argmax(counts))
+
+    region_locations.append([
+        region_id, first_slice, last_slice, selected_slice
+    ])
+
+np.savetxt(
+    project_dir / "region_locations.csv",
+    region_locations,
+    delimiter=",",
+    header="region_id,first_slice,last_slice,selected_slice",
+    comments="",
+    fmt="%d"
+)
+
+print("Saved region_locations.csv")
+# Compare Region 5 with slightly smaller and larger masks
+original_mask = region_labels == 5
+
+# Use face-sharing neighbours for this experiment
+structure = ndimage.generate_binary_structure(3, 1)
+
+smaller_mask = ndimage.binary_erosion(
+    original_mask, structure=structure, iterations=1
+)
+larger_mask = ndimage.binary_dilation(
+    original_mask, structure=structure, iterations=1
+)
+
+for name, region_mask in [
+    ("Smaller", smaller_mask),
+    ("Original", original_mask),
+    ("Larger", larger_mask)
+]:
+    values = pet_data[region_mask]
+
+    if values.size == 0:
+        print(f"{name}: mask is empty")
+    else:
+        print(
+            f"{name}: {values.size} voxels, "
+            f"mean SUV = {np.mean(values):.6f}"
+        )
+
+        # Save the mask-change experiment
+original_mean = float(np.mean(pet_data[original_mask]))
+sensitivity_results = []
+
+for name, region_mask in [
+    ("smaller", smaller_mask),
+    ("original", original_mask),
+    ("larger", larger_mask)
+]:
+    values = pet_data[region_mask]
+    mean_suv = float(np.mean(values)) if values.size else np.nan
+    change_pct = 100 * (mean_suv - original_mean) / original_mean
+
+    sensitivity_results.append([
+        5, name, values.size, mean_suv, change_pct
+    ])
+
+import csv
+
+with open(
+    project_dir / "region5_mask_sensitivity.csv",
+    "w", newline="", encoding="utf-8"
+) as file:
+    writer = csv.writer(file)
+    writer.writerow([
+        "region_id", "mask", "voxel_count",
+        "mean_suv", "mean_suv_change_pct"
+    ])
+    writer.writerows(sensitivity_results)
+
+print("Saved region5_mask_sensitivity.csv")
