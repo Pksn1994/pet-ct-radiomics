@@ -8,94 +8,66 @@ I started with one patient from the FDG-PET-CT-Lesions dataset to understand the
 
 I want to investigate how radiomic features change when image preprocessing and segmentation settings are changed.
 
+So far, I have calculated basic PET and CT statistics and carried out a first experiment with changes to the mask boundary.
+
+## Tools
+
+- Python 3.12.3 in Ubuntu through WSL
+- NumPy for array operations and basic statistics
+- NiBabel for reading NIfTI images
+- Matplotlib for figures
+- SciPy for connected regions, erosion and dilation
+- VS Code for writing and running the code
+
+The Ubuntu package versions are recorded in `requirements-wsl.txt`.
+
+I initially used Python 3.11.9 on Windows. Windows blocked a Matplotlib file, and reinstalling the package did not solve the problem, so I continued using Ubuntu through WSL.
+
+## Dataset
+
+I am using the FDG-PET-CT-Lesions dataset, provided by Sergios Gatidis and Thomas Küstner.
+
+- Dataset DOI: https://doi.org/10.7937/gkr0-xv29
+- Data paper: https://doi.org/10.1038/s41597-022-01718-3
+
+For the first case, I used three files from the same study:
+
+- `SUV.nii.gz`: PET image containing SUV values
+- `CTres.nii.gz`: CT image resampled to the PET grid
+- `SEG.nii.gz`: segmentation mask
+
+The NIfTI dataset is provided under CC BY-NC 4.0. The figures in this repository were generated from these images, with segmentation outlines added where shown. The original image files are not included in the repository.
+
 ## Work completed
 
 - Loaded PET, CT and segmentation files using NiBabel.
-- Checked image dimensions, voxel spacing, and spatial transforms.
+- Checked image dimensions, voxel spacing and spatial transforms.
 - Checked the mask labels and counted the labelled voxels.
 - Calculated PET uptake statistics for the full mask.
 - Made PET and CT overviews of all 23 slices containing the mask.
 - Separated the mask into five connected regions using SciPy.
 - Saved PET statistics and slice locations for each region.
 - Made closer PET and CT views of each region.
-- Tested how shrinking and expanding Region 5 changed its mean SUV.
-- Calculated CT intensity statistics for each connected region.
+- Tested how shrinking and expanding each region changed its mean SUV.
+- Calculated CT intensity statistics for each region.
 
-For the first case, all three images have dimensions of 400 × 400 × 326 and matching spatial transforms. The mask contains 1,299 labelled voxels.
+## Initial image checks
+
+For the first case, all three images have dimensions of 400 × 400 × 326 and matching spatial transforms. The mask contains labels 0 and 1, with 1,299 voxels labelled 1.
 
 The spatial units are not specified in the NIfTI headers. I still need to verify these before reporting physical measurements.
 
-## Example
+### Example CT slice
 
-CT slice with the supplied segmentation outline:
+The figure below shows CT slice 296 with the supplied segmentation outlined in red.
 
 ![CT with segmentation outline](ct_mask_slice296.png)
 
-This is an initial visual check of one slice. It does not establish alignment throughout the scan.
+This is an initial visual check of one slice. Matching spatial transforms and inspecting one slice do not establish alignment throughout the scan.
 
-## Tools
+### Looking at more slices
 
-- Python 3.11.9
-- NumPy
-- NiBabel
-- Matplotlib
-
-## Dataset
-
-FDG-PET-CT-Lesions, provided by Sergios Gatidis and Thomas Küstner.
-
-Dataset DOI: https://doi.org/10.7937/gkr0-xv29
-
-Data paper: https://doi.org/10.1038/s41597-022-01718-3
-
-The NIfTI dataset is provided under CC BY-NC 4.0. The example figure above was generated from this dataset with a segmentation outline added. The original image files are not included in this repository.
-
-## Next steps
-
-- Calculate basic PET uptake statistics within the mask.
-- Extract radiomic features.
-- Extend the analysis to more patients.
-- Study feature sensitivity to resampling, discretization, and segmentation changes.
-
-This project is still in progress. No clinical prediction or feature robustness results are available yet.
-
-## First PET statistics
-
-I calculated PET uptake statistics using all 1,299 voxels labelled 1 in the segmentation mask.
-
-| Measurement | Value |
-| --- | ---: |
-| Mean SUV | 6.397499 |
-| Median SUV | 5.095382 |
-| Maximum SUV | 19.653612 |
-| Standard deviation | 3.871733 |
-
-![PET uptake histogram](pet_suv_histogram.png)
-
-The distribution has a long tail towards higher SUV values. The mean is higher than the median. These statistics describe the full mask for one patient, which may include several separate lesions.
-
-## Running the script
-
-I used Python 3.11 on Windows. To run the code, open PowerShell in the project folder and install the packages in a virtual environment:
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
-The image files are not included in this repository. Put `SUV.nii.gz`, `CTres.nii.gz` and `SEG.nii.gz` from the same study in a folder called `pet-ct-radiomicsdataPETCT0011f3deaf`, beside the script. If you use a different folder name, update `data_dir` in the code.
-
-Then run:
-
-```powershell
-.\.venv\Scripts\python.exe .\inspect_images.py
-```
-
-Close each plot window to continue. The script prints the image information and PET statistics, then saves the CSV, CT overlay, and histogram.
-
-## Looking at more slices
-
-The mask contains labelled voxels in 23 slices. I made PET and CT overview images to see where these regions appear across the scan.
+The mask contains labelled voxels in 23 slices. I made PET and CT overview images to see where the mask appears across the scan.
 
 ![CT slices with mask outlines](ct_mask_all_slices.png)
 
@@ -103,32 +75,49 @@ The mask contains labelled voxels in 23 slices. I made PET and CT overview image
 
 These images give an overview, but the small panels are not enough to check alignment in detail. The PET images use a display range of 0–10 SUV.
 
-## Running with Ubuntu
+The voxel counts for each mask-containing slice are saved in `mask_voxels_per_slice.csv`. Slice indices in the script and figures start at zero.
 
-Windows blocked a Matplotlib file on my laptop. Reinstalling the package did not solve it, so I continued using Ubuntu through WSL with Python 3.12.3.
+## First PET statistics
 
-I created a separate environment and installed the packages:
+I calculated PET uptake statistics using all 1,299 voxels labelled 1 in the segmentation mask. All selected PET values were finite.
 
-    python3 -m venv ~/pet-ct-radiomics-venv
-    ~/pet-ct-radiomics-venv/bin/python -m pip install numpy nibabel matplotlib
+| Measurement | Value |
+|---|---:|
+| Mean SUV | 6.397499 |
+| Median SUV | 5.095382 |
+| Maximum SUV | 19.653612 |
+| Standard deviation | 3.871733 |
 
-From the project folder in Ubuntu, I ran:
+The standard deviation was calculated using NumPy's default population standard deviation.
 
-    ~/pet-ct-radiomics-venv/bin/python inspect_images.py
+![PET uptake histogram](pet_suv_histogram.png)
 
-The figures were saved as PNG files, which I opened in VS Code. Plot windows were not available in this setup.
+The distribution has a long tail towards higher SUV values, and the mean is higher than the median.
+
+These statistics describe the full mask for one patient. The results are saved in `pet_mask_statistics.csv`.
 
 ## Connected regions in the mask
 
 I used SciPy to separate the mask into connected regions. Voxels were considered connected if they shared a face, edge or corner, known as 26-connectivity.
 
-This gave five regions containing 103, 59, 280, 41 and 816 voxels. Together, they account for all 1,299 labelled voxels.
+This gave five regions:
 
-I saved the PET uptake statistics for each region in `pet_region_statistics.csv`. These are connected regions in the segmentation and should not automatically be treated as separate clinical lesions.
+| Region | Voxels |
+|---|---:|
+| 1 | 103 |
+| 2 | 59 |
+| 3 | 280 |
+| 4 | 41 |
+| 5 | 816 |
+| Total | 1,299 |
 
-## A closer look at each region
+I saved the PET uptake statistics for each region in `pet_region_statistics.csv`.
 
-I cropped the PET and CT images around each of the five regions to see the outlines more clearly. For each region, I chose the slice with the most mask voxels.
+These are connected regions in the segmentation and should not automatically be treated as separate clinical lesions. Their numbers are labels assigned by the algorithm, rather than a ranking by size.
+
+### A closer look at each region
+
+I cropped the PET and CT images around each region to see the outlines more clearly. For each region, I chose the slice with the most mask voxels.
 
 The PET image is on the left and the CT image is on the right. The red line shows the mask boundary. The region numbers match the rows in `pet_region_statistics.csv`.
 
@@ -136,7 +125,7 @@ Each crop covers a different area, so the regions are not all shown at the same 
 
 ![PET and CT views of each region](pet_ct_regions.png)
 
-The Ubuntu package versions are recorded in `requirements-wsl.txt`.
+The slice ranges and the slices shown in this figure are saved in `region_locations.csv`.
 
 ## Testing changes to the mask
 
@@ -158,11 +147,11 @@ Blue shows the smaller mask, red the original, and green the larger mask. The fi
 
 The image display is limited to 0–10 SUV, but the calculations use the original PET values. The results are saved in `region5_mask_sensitivity.csv`.
 
-This is a first experiment on one region from one scan. The voxel counts changed quite a lot, so this needs to be considered when interpreting the SUV changes. These operations follow the voxel grid and do not change the boundary by a uniform distance in millimetres.
+The voxel counts changed substantially, so this needs to be considered when interpreting the SUV changes. These operations follow the voxel grid and do not change the boundary by a uniform distance in millimetres. The altered masks are experimental variations of the supplied mask.
 
 ### Repeating the test for all five regions
 
-I repeated the same erosion and dilation steps for each connected region.
+I repeated the same erosion and dilation steps for each connected region. Each region was changed independently.
 
 | Region | Mean SUV change after shrinking | Mean SUV change after expanding |
 |---|---:|---:|
@@ -172,9 +161,13 @@ I repeated the same erosion and dilation steps for each connected region.
 | 4 | +53.89% | −29.60% |
 | 5 | +40.28% | −29.38% |
 
-The mean SUV increased after shrinking and decreased after expanding in all five regions. However, shrinking left only 19 voxels in Region 1, eight in Region 2 and four in Region 4. These measurements therefore describe much smaller parts of the original regions.
+The mean SUV increased after shrinking and decreased after expanding in all five regions.
 
-The full results, including voxel counts, are saved in `all_regions_mask_sensitivity.csv`. All five regions come from the same scan, so this does not yet show how the results vary between patients.
+However, shrinking left only 19 voxels in Region 1, eight in Region 2 and four in Region 4. These measurements therefore describe much smaller parts of the original regions.
+
+The full results, including voxel counts, are saved in `all_regions_mask_sensitivity.csv`.
+
+All five regions come from the same scan. This is an initial experiment and does not yet show how the results vary between patients.
 
 ## CT intensity within each region
 
@@ -190,4 +183,73 @@ I also calculated CT intensity statistics using the same five regions.
 
 The full results are saved in `ct_region_statistics.csv`, including the median, minimum, maximum and standard deviation.
 
-These values come from `CTres.nii.gz`, the CT image resampled to the PET grid. I used the stored image values without applying the display limits from the figures.
+These values come from `CTres.nii.gz`, the CT image resampled to the PET grid. I used the image values without applying the display limits from the figures.
+
+## Running the script
+
+I currently run the script using Python 3.12.3 in Ubuntu through WSL.
+
+The image files are not included in this repository. Put `SUV.nii.gz`, `CTres.nii.gz` and `SEG.nii.gz` from the same study in a folder called `pet-ct-radiomicsdataPETCT0011f3deaf`, beside `inspect_images.py`.
+
+If you use a different folder name, update `data_dir` in the script.
+
+From the project folder in Ubuntu, create an environment and install the recorded packages:
+
+```bash
+python3 -m venv ~/pet-ct-radiomics-venv
+~/pet-ct-radiomics-venv/bin/python -m pip install -r requirements-wsl.txt
+```
+
+Then run:
+
+```bash
+~/pet-ct-radiomics-venv/bin/python inspect_images.py
+```
+
+On my laptop, I can also run it from PowerShell in the project folder:
+
+```powershell
+wsl /home/footuser/pet-ct-radiomics-venv/bin/python ./inspect_images.py
+```
+
+The PowerShell command contains my Ubuntu username. Other users will need to use their own environment path.
+
+The script prints image information and saves CSV files and PNG figures in the project folder. I open the figures in VS Code because plot windows are not available in my current setup.
+
+`requirements.txt` records the earlier Windows environment. The current analysis uses `requirements-wsl.txt`.
+
+## Output files
+
+| File | Contents |
+|---|---|
+| `pet_mask_statistics.csv` | PET statistics for the full mask |
+| `mask_voxels_per_slice.csv` | Mask voxel counts for each labelled slice |
+| `pet_region_statistics.csv` | PET statistics for each connected region |
+| `region_locations.csv` | First, last and selected slice indices for each region |
+| `region5_mask_sensitivity.csv` | Mean SUV and voxel counts for the Region 5 mask experiment |
+| `all_regions_mask_sensitivity.csv` | Mean SUV and voxel counts for the experiment across all five regions |
+| `ct_region_statistics.csv` | CT intensity statistics for each region |
+| `ct_mask_slice296.png` | CT slice 296 with the mask outline |
+| `pet_suv_histogram.png` | PET uptake distribution within the full mask |
+| `ct_mask_all_slices.png` | CT overview of all mask-containing slices |
+| `pet_mask_all_slices.png` | PET overview of all mask-containing slices |
+| `pet_ct_regions.png` | Cropped PET and CT views of each region |
+| `region5_mask_changes.png` | Smaller, original and larger mask outlines on PET slice 298 |
+
+## Limitations
+
+- The analysis currently includes one scan from one patient.
+- Connected regions from the same scan are not independent patient samples.
+- The spatial units still need to be verified before calculating physical measurements.
+- The figures support visual inspection but do not confirm alignment throughout the scan.
+- The erosion and dilation experiments changed the voxel counts substantially, especially for the smaller regions.
+- I have calculated basic intensity statistics so far. Texture features and a wider assessment of feature robustness are still to be done.
+- I have not built a clinical prediction model.
+
+## Next steps
+
+- Verify the spatial units before calculating physical measurements.
+- Organise the script so it is easier to use with more scans.
+- Extract additional radiomic features with clearly recorded settings.
+- Extend the analysis to more patients.
+- Study how resampling, discretization and mask changes affect the features.
