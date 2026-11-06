@@ -217,3 +217,53 @@ np.savetxt(
 )
 
 print("Saved pet_region_statistics.csv")
+# Create closer PET and CT views of each connected region
+region_boxes = ndimage.find_objects(region_labels)
+fig, axes = plt.subplots(
+    region_count, 2,
+    figsize=(10, 4 * region_count),
+    squeeze=False
+)
+
+for region_id, box in enumerate(region_boxes, start=1):
+    x_box, y_box, z_box = box
+    local_labels = region_labels[box]
+
+    counts = np.count_nonzero(local_labels == region_id, axis=(0, 1))
+    z = z_box.start + int(np.argmax(counts))
+
+    # Add some surrounding anatomy to the crop
+    margin = 15
+    x0 = max(0, x_box.start - margin)
+    x1 = min(mask_data.shape[0], x_box.stop + margin)
+    y0 = max(0, y_box.start - margin)
+    y1 = min(mask_data.shape[1], y_box.stop + margin)
+
+    outline = region_labels[x0:x1, y0:y1, z] == region_id
+
+    for col, (image, cmap, low, high, name) in enumerate([
+        (pet_image, "gray_r", 0, 10, "PET"),
+        (ct_image, "gray", -150, 250, "CT")
+    ]):
+        ax = axes[region_id - 1, col]
+        crop = np.asarray(image.dataobj[x0:x1, y0:y1, z])
+
+        ax.imshow(
+            crop.T, cmap=cmap, origin="lower",
+            vmin=low, vmax=high
+        )
+        ax.contour(
+            outline.T, levels=[0.5],
+            colors="red", linewidths=1
+        )
+        ax.set_title(f"Region {region_id} | {name} | slice {z}")
+        ax.axis("off")
+
+fig.tight_layout()
+fig.savefig(
+    project_dir / "pet_ct_regions.png",
+    dpi=200, bbox_inches="tight"
+)
+plt.close(fig)
+
+print("Saved pet_ct_regions.png")
