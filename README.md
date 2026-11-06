@@ -159,4 +159,20 @@ The image display is limited to 0–10 SUV, but the calculations use the origina
 
 This is a first experiment on one region from one scan. The voxel counts changed quite a lot, so this needs to be considered when interpreting the SUV changes. These operations follow the voxel grid and do not change the boundary by a uniform distance in millimetres.
 
+### Repeating the test for all five regions
+
+I repeated the same erosion and dilation steps for each connected region.
+
+| Region | Mean SUV change after shrinking | Mean SUV change after expanding |
+|---|---:|---:|
+| 1 | +108.22% | −44.97% |
+| 2 | +77.09% | −40.87% |
+| 3 | +57.54% | −33.95% |
+| 4 | +53.89% | −29.60% |
+| 5 | +40.28% | −29.38% |
+
+The mean SUV increased after shrinking and decreased after expanding in all five regions. However, shrinking left only 19 voxels in Region 1, eight in Region 2 and four in Region 4. These measurements therefore describe much smaller parts of the original regions.
+
+The full results, including voxel counts, are saved in `all_regions_mask_sensitivity.csv`. All five regions come from the same scan, so this does not yet show how the results vary between patients.
+
 
