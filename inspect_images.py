@@ -352,3 +352,54 @@ with open(
     writer.writerows(sensitivity_results)
 
 print("Saved region5_mask_sensitivity.csv")
+# Show the mask changes on one PET slice
+from matplotlib.lines import Line2D
+
+box = region_boxes[4]  # Region 5
+z = 298
+margin = 15
+
+x0 = max(0, box[0].start - margin)
+x1 = min(pet_data.shape[0], box[0].stop + margin)
+y0 = max(0, box[1].start - margin)
+y1 = min(pet_data.shape[1], box[1].stop + margin)
+
+fig, ax = plt.subplots(figsize=(7, 6))
+
+display = ax.imshow(
+    pet_data[x0:x1, y0:y1, z].T,
+    cmap="gray_r", origin="lower",
+    vmin=0, vmax=10,
+    interpolation="nearest"
+)
+
+legend_handles = []
+
+for name, region_mask, color in [
+    ("Smaller", smaller_mask, "blue"),
+    ("Original", original_mask, "red"),
+    ("Larger", larger_mask, "green")
+]:
+    outline = region_mask[x0:x1, y0:y1, z]
+
+    ax.contour(
+        outline.T, levels=[0.5],
+        colors=[color], linewidths=1.2
+    )
+    legend_handles.append(
+        Line2D([0], [0], color=color, label=name)
+    )
+
+ax.legend(handles=legend_handles, loc="upper right")
+ax.set_title(f"Region 5: mask changes | slice {z}")
+ax.axis("off")
+fig.colorbar(display, ax=ax, label="SUV")
+fig.tight_layout()
+
+fig.savefig(
+    project_dir / "region5_mask_changes.png",
+    dpi=200, bbox_inches="tight"
+)
+plt.close(fig)
+
+print("Saved region5_mask_changes.png")
