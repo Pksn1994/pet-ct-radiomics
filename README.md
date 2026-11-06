@@ -133,4 +133,26 @@ Each crop covers a different area, so the regions are not all shown at the same 
 
 The Ubuntu package versions are recorded in `requirements-wsl.txt`.
 
+## Testing changes to the mask
+
+I wanted to see how changing the mask boundary would affect the mean SUV. I started with Region 5, the largest connected region in this scan.
+
+Using SciPy, I shrank the mask with one erosion step and expanded it with one dilation step. Both operations used face-sharing neighbours in 3D.
+
+| Mask | Number of voxels | Mean SUV | Change from original |
+|---|---:|---:|---:|
+| Smaller | 432 | 10.246 | +40.28% |
+| Original | 816 | 7.304 | 0% |
+| Larger | 1,305 | 5.158 | −29.38% |
+
+The mean SUV increased when I removed the outer voxels and decreased when I added surrounding voxels. This shows how the choice of boundary affected the measurement for this region.
+
+![Mask changes for Region 5](region5_mask_changes.png)
+
+Blue shows the smaller mask, red the original, and green the larger mask. The figure shows slice 298. The statistics were calculated using the full 3D masks.
+
+The image display is limited to 0–10 SUV, but the calculations use the original PET values. The results are saved in `region5_mask_sensitivity.csv`.
+
+This is a first experiment on one region from one scan. The voxel counts changed quite a lot, so this needs to be considered when interpreting the SUV changes. These operations follow the voxel grid and do not change the boundary by a uniform distance in millimetres.
+
 
